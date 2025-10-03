@@ -1,20 +1,12 @@
 import pygame
 import sys
 
-# not using a wildcard because the IDE is throwing a tantrum about it
-# TODO ignore its stuff maybe
 import asteroid
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
-from constants import (
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    ASTEROID_MIN_RADIUS,
-    ASTEROID_MAX_RADIUS,
-    ASTEROID_KINDS,
-    ASTEROID_SPAWN_RATE,
-)
+from constants import *
 from player import Player
+from shot import Shot
 
 
 def main():
@@ -27,17 +19,19 @@ def main():
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
+    shots = pygame.sprite.Group()
 
     Player.containers = (updatable, drawable)
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+
+    Shot.containers = (shots, updatable, drawable)
 
     Asteroid.containers = (asteroids, updatable, drawable)
     AsteroidField.containers = updatable
 
     asteroid_field = AsteroidField()
 
-    running = True
-    while running:
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
@@ -48,7 +42,12 @@ def main():
                 print("Game over!")
                 sys.exit(0)
 
-        screen.fill((0, 0, 0))
+            for bullet in shots:
+                if bullet.check_collision(asteroid_object):
+                    asteroid_object.split(asteroid_field)
+                    bullet.kill()
+
+        screen.fill(pygame.Color("black"))
         for drawable_object in drawable:
             drawable_object.draw(screen)
 
